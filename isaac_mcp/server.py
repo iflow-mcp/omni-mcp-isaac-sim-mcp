@@ -228,10 +228,87 @@ mcp = FastMCP(
 # Global connection for resources (since resources can't access context)
 _isaac_connection = None
 # _polyhaven_enabled = False  # Add this global variable
+# Check if we're in mock mode (for testing without Isaac Sim)
+_MOCK_MODE = os.environ.get("ISAAC_MCP_MOCK_MODE", "false").lower() == "true"
+
+class MockIsaacConnection:
+    """Mock Isaac connection for testing without Isaac Sim"""
+
+    def __init__(self):
+        self.connected = True
+
+    def connect(self) -> bool:
+        """Mock connect - always succeeds"""
+        logger.info("Mock Isaac connection established (MOCK_MODE)")
+        return True
+
+    def disconnect(self):
+        """Mock disconnect"""
+        logger.info("Mock Isaac connection disconnected")
+
+    def send_command(self, command_type: str, params=None) -> dict:
+        """Mock send command - returns simulated responses"""
+        logger.info(f"Mock sending command: {command_type} with params: {params}")
+
+        # Simulated responses for different commands
+        mock_responses = {
+            "get_scene_info": {
+                "status": "success",
+                "result": {
+                    "assets_root_path": "/mock/Assets/Isaac/4.2",
+                    "scene": "Mock Scene",
+                    "objects": []
+                }
+            },
+            "create_physics_scene": {
+                "status": "success",
+                "result": "Physics scene created (mock)",
+                "message": "Mock physics scene created successfully"
+            },
+            "create_robot": {
+                "status": "success",
+                "result": "Robot created (mock)",
+                "message": "Mock robot created successfully"
+            },
+            "execute_script": {
+                "status": "success",
+                "result": "Script executed (mock)",
+                "output": "Mock script execution completed"
+            },
+            "generate_3d_from_text_or_image": {
+                "status": "success",
+                "task_id": "mock_task_123",
+                "prim_path": "/World/mock_object"
+            },
+            "search_3d_usd_by_text": {
+                "status": "success",
+                "task_id": "mock_search_456",
+                "prim_path": "/World/mock_search_result"
+            },
+            "transform": {
+                "status": "success",
+                "message": "Transform applied (mock)"
+            }
+        }
+
+        return mock_responses.get(command_type, {
+            "status": "success",
+            "result": "Mock response"
+        })
 
 def get_isaac_connection():
     """Get or create a persistent Isaac connection"""
-    global _isaac_connection, _polyhaven_enabled  # Add _polyhaven_enabled to globals
+    global _isaac_connection
+
+    # Check if we're in mock mode
+    if _MOCK_MODE:
+        if _isaac_connection is None:
+            _isaac_connection = MockIsaacConnection()
+        return _isaac_connection
+
+    # Original real connection logic
+    global _polyhaven_enabled
+
     
     # If we have an existing connection, check if it's still valid
     if _isaac_connection is not None:
