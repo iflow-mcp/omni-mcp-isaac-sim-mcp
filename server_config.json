@@ -1,0 +1,1 @@
+{"serverConfig": {"mcpServers": {"isaac-sim-mcp": {"command": "uvx", "args": ["--from", "iflow-mcp_omni-mcp-isaac-sim-mcp", "isaac-sim-mcp"], "env": {"ISAAC_MCP_MOCK_MODE": "true"}, "values": {"ISAAC_MCP_MOCK_MODE": {"type": "string", "title": "Mock Mode", "description": "Enable mock mode for testing without Isaac Sim (set to true for testing)", "default": "true"}}}}}}
